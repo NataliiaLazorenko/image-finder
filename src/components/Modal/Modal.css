@@ -18,6 +18,7 @@
   max-height: calc(100vh - 24px);
 }
 
-.is-open {
-  scroll-y: none;
+body.Modal-open {
+  height: 100vh;
+  overflow: hidden;
 }

@@ -15,6 +15,7 @@ class App extends Component {
     currentPage: 1,
     images: [],
     isLoading: false,
+
     error: null,
 
     showModal: false,
@@ -44,16 +45,22 @@ class App extends Component {
     const { searchQuery, currentPage } = this.state;
     const options = { searchQuery, currentPage };
 
-    this.setState({ isLoading: true });
+    this.setState({ isLoading: true, error: null });
 
     fetchImages(options)
       .then(images =>
-        this.setState(prevState => ({
-          images: [...prevState.images, ...images],
-          currentPage: prevState.currentPage + 1,
-        })),
+        images.length > 0
+          ? this.setState(prevState => ({
+              images: [...prevState.images, ...images],
+              currentPage: prevState.currentPage + 1,
+            }))
+          : this.setState({ error: 'Nothing found, specify your query' }),
       )
-      .catch(error => this.setState({ error }))
+      .catch(error =>
+        this.setState({
+          error: 'Whoops, something went wrong. Please try again',
+        }),
+      )
       .finally(() => {
         this.setState({ isLoading: false });
       });
@@ -75,12 +82,13 @@ class App extends Component {
   };
 
   render() {
-    const { images, isLoading, showModal, currentImage } = this.state;
+    const { images, isLoading, error, showModal, currentImage } = this.state;
     const shouldRenderLoadMoreBtn = images.length > 0 && !isLoading;
 
     return (
       <div className="App">
         <Searchbar onSubmit={this.onChangeQuery} />
+        {error && <p className="warningMessage">{error}</p>}
         <ImageGalery images={images} onClick={this.handleGalleryClick} />
         <div className="spinnerContainer">
           {isLoading && (

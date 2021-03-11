@@ -5,6 +5,14 @@
   padding-bottom: 24px;
 }
 
+.warningMessage {
+  text-align: center;
+  font-size: 40px;
+  font-weight: 700;
+
+  color: rgb(243, 79, 79);
+}
+
 .spinnerContainer {
   display: flex;
   justify-content: center;
