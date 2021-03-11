@@ -89,7 +89,7 @@ class App extends Component {
         </div>
         {shouldRenderLoadMoreBtn && <Button handleButton={this.fetchImages} />}
         {showModal && (
-          <Modal>
+          <Modal onClose={this.toggleModal}>
             <img
               src={currentImage.largeImageURL}
               alt={currentImage.description}
