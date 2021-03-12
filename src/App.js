@@ -13,9 +13,10 @@ class App extends Component {
   state = {
     searchQuery: '',
     currentPage: 1,
+    totalPages: 1,
     images: [],
-    isLoading: false,
 
+    isLoading: false,
     error: null,
 
     showModal: false,
@@ -26,6 +27,7 @@ class App extends Component {
     this.setState({
       searchQuery: query,
       currentPage: 1,
+      totalPages: 1,
       images: [],
     });
   };
@@ -34,11 +36,6 @@ class App extends Component {
     if (prevState.searchQuery !== this.state.searchQuery) {
       this.fetchImages();
     }
-
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: 'smooth',
-    });
   }
 
   fetchImages = () => {
@@ -48,21 +45,27 @@ class App extends Component {
     this.setState({ isLoading: true, error: null });
 
     fetchImages(options)
-      .then(images =>
-        images.length > 0
+      .then(({ hits, totalHits }) =>
+        hits.length > 0
           ? this.setState(prevState => ({
-              images: [...prevState.images, ...images],
+              images: [...prevState.images, ...hits],
               currentPage: prevState.currentPage + 1,
+              totalPages: Math.ceil(totalHits / 12),
             }))
           : this.setState({ error: 'Nothing found, specify your query' }),
       )
       .catch(error =>
         this.setState({
-          error: 'Whoops, something went wrong. Please try again',
+          error,
         }),
       )
       .finally(() => {
         this.setState({ isLoading: false });
+
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: 'smooth',
+        });
       });
   };
 
@@ -82,23 +85,39 @@ class App extends Component {
   };
 
   render() {
-    const { images, isLoading, error, showModal, currentImage } = this.state;
-    const shouldRenderLoadMoreBtn = images.length > 0 && !isLoading;
+    const {
+      currentPage,
+      totalPages,
+      images,
+      isLoading,
+      error,
+      showModal,
+      currentImage,
+    } = this.state;
+
+    const shouldRenderLoadMoreBtn =
+      images.length > 0 && !isLoading && currentPage <= totalPages;
 
     return (
       <div className="App">
         <Searchbar onSubmit={this.onChangeQuery} />
+
         {error && <p className="warningMessage">{error}</p>}
+
         <ImageGalery images={images} onClick={this.handleGalleryClick} />
-        <div className="spinnerContainer">
-          {isLoading && (
+
+        {isLoading && (
+          <div className="spinnerContainer">
             <Loader type="Bars" color="#3f51b5" height={80} width={80} />
-          )}
-        </div>
-        {shouldRenderLoadMoreBtn && <Button handleButton={this.fetchImages} />}
+          </div>
+        )}
+
+        {shouldRenderLoadMoreBtn && <Button onClick={this.fetchImages} />}
+
         {showModal && (
           <Modal onClose={this.toggleModal}>
             <img
+              className="largeImage"
               src={currentImage.largeImageURL}
               alt={currentImage.description}
             />
